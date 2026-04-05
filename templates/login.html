@@ -1,0 +1,69 @@
+{% extends "base.html" %} {% set hide_topbar = true %} {% block title %}Login
+Admin | Portal ELOISA{% endblock %} {% block body_class %}login-page{% endblock
+%} {% block conteudo %}
+<section
+  class="hero"
+  style="
+    max-width: 920px;
+    width: 100%;
+    margin-top: 0;
+    display: grid;
+    grid-template-columns: 1fr 0.92fr;
+    gap: 24px;
+    align-items: center;
+  "
+>
+  <div>
+    <span class="chip">Área restrita</span>
+    <h1 style="font-size: clamp(1.5rem, 2.6vw, 2rem); margin-top: 12px">
+      Entre para publicar o que vai aparecer no feed.
+    </h1>
+    <p style="font-size: 0.97rem; max-width: 46ch">
+      Daqui saem os posts, as imagens e os destaques que o público vai ver.
+    </p>
+    <div class="panel-actions" style="margin-top: 18px">
+      <a class="btn-link btn-secondary" href="{{ url_for('noticias') }}"
+        >Voltar ao feed</a
+      >
+    </div>
+    <p class="small muted" style="margin-top: 16px">
+      
+    </p>
+  </div>
+
+  <div class="panel" style="padding: 24px">
+    <h2 style="margin-top: 0; font-size: 1.25rem">Acessar painel</h2>
+    <form method="post">
+      <div class="field">
+        <label for="usuario">Usuário</label>
+        <input
+          class="input"
+          id="usuario"
+          name="usuario"
+          type="text"
+          placeholder="Seu usuário de acesso"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="senha">Senha</label>
+        <input
+          class="input"
+          id="senha"
+          name="senha"
+          type="password"
+          placeholder="Sua senha"
+          required
+        />
+      </div>
+      <button
+        class="btn btn-primary"
+        type="submit"
+        style="width: 100%; justify-content: center"
+      >
+        Entrar agora
+      </button>
+    </form>
+  </div>
+</section>
+{% endblock %}

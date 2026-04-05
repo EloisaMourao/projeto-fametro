@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Novo Post' if modo == 'criar' else 'Editar Post' }} | Portal ELOISA{% endblock %}
+{% block conteudo %}
+<section class="hero">
+    <span class="chip">{{ 'Novo post' if modo == 'criar' else 'Editar post' }}</span>
+    <h1 style="font-size: clamp(1.45rem, 2.4vw, 2rem);">{{ 'Monte o próximo post do feed' if modo == 'criar' else 'Ajuste o post que já está no ar' }}</h1>
+    <p style="max-width: 56ch; font-size: 0.96rem;">Capriche no título, escolha uma boa imagem e escreva uma chamada que dê vontade de abrir.</p>
+</section>
+
+<section class="panel" style="margin-top: 22px; padding: 22px;">
+    <div class="form-grid">
+        <div class="preview-box" id="previewBox">
+            {% set imagem_atual = noticia['imagem'] if noticia and noticia['imagem'] else '' %}
+            {% if imagem_atual %}
+            <img id="previewImage" src="/{{ imagem_atual }}" alt="Pré-visualização da imagem do post">
+            {% else %}
+            <div class="preview-empty" id="previewEmpty">
+                <div>
+                    <strong style="font-family: 'Trebuchet MS', Verdana, sans-serif; font-size: 1.4rem; display: block; margin-bottom: 10px;">Pré-visualização do post</strong>
+                    <span>Adicione uma imagem para deixar o feed com cara de portal de notícias.</span>
+                </div>
+            </div>
+            <img id="previewImage" src="" alt="Pré-visualização da imagem do post" hidden>
+            {% endif %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            <div class="field">
+                <label for="titulo">Título</label>
+                <input class="input" id="titulo" name="titulo" type="text" value="{{ noticia['titulo'] if noticia else '' }}" placeholder="Ex.: Feira cultural movimenta o centro no fim de semana" required>
+            </div>
+            <div class="field">
+                <label for="resumo">Chamada do post</label>
+                <input class="input" id="resumo" name="resumo" type="text" value="{{ noticia['resumo'] if noticia else '' }}" placeholder="Uma frase curta para chamar atenção no feed">
+            </div>
+            <div class="field">
+                <label for="categoria">Categoria</label>
+                <select class="select" id="categoria" name="categoria">
+                    {% set categoria_atual = noticia['categoria'] if noticia and noticia['categoria'] else 'Geral' %}
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}" {% if categoria_atual == categoria %}selected{% endif %}>{{ categoria }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <label class="chip" style="width: fit-content; margin-bottom: 16px;">
+                <input type="checkbox" name="destaque" value="1" {% if noticia and noticia['destaque'] %}checked{% endif %}>
+                Marcar como destaque
+            </label>
+            <div class="field">
+                <label for="conteudo">Conteúdo</label>
+                <textarea class="textarea" id="conteudo" name="conteudo" placeholder="Escreva o texto completo do post" required>{{ noticia['conteudo'] if noticia else '' }}</textarea>
+            </div>
+            <div class="field">
+                <label for="imagem">Imagem do post</label>
+                <input class="input" id="imagem" name="imagem" type="file" accept="image/*">
+            </div>
+            {% if modo == 'editar' %}
+            <input type="hidden" name="imagem_atual" value="{{ imagem_atual }}">
+            {% endif %}
+            <div class="panel-actions">
+                <button class="btn btn-primary" type="submit">{{ 'Publicar no feed' if modo == 'criar' else 'Salvar post' }}</button>
+                <a class="btn-link btn-secondary" href="{{ url_for('dashboard') }}">Voltar ao painel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const inputImagem = document.getElementById('imagem');
+    const previewImage = document.getElementById('previewImage');
+    const previewEmpty = document.getElementById('previewEmpty');
+
+    if (inputImagem) {
+        inputImagem.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            previewImage.src = URL.createObjectURL(file);
+            previewImage.hidden = false;
+            if (previewEmpty) previewEmpty.hidden = true;
+        });
+    }
+</script>
+{% endblock %}

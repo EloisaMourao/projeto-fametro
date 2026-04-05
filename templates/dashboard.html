@@ -1,0 +1,126 @@
+{% extends "base.html" %} {% block title %}Painel Admin | Portal Tefé Noticías{%
+endblock %} {% block conteudo %}
+<section class="hero">
+  <span class="chip">Painel do admin</span>
+  <h1 style="font-size: clamp(1.5rem, 2.5vw, 2.1rem)">
+    Gerenciamento de post.
+  </h1>
+  <p style="max-width: 56ch; font-size: 0.96rem">
+    Escreva, publique, ajuste imagens e acompanhe quais conteúdos estão rendendo
+    mais curtidas.
+  </p>
+  <div class="toolbar" style="margin-top: 22px">
+    <a class="btn-link btn-primary" href="{{ url_for('criar_noticia') }}"
+      >Criar post</a
+    >
+    <a class="btn-link btn-secondary" href="{{ url_for('noticias') }}"
+      >Ver feed</a
+    >
+  </div>
+</section>
+
+<section class="grid stats-grid" style="margin-top: 22px">
+  <article class="stats-card">
+    <span>Posts no ar</span>
+    <strong>{{ total_posts }}</strong>
+  </article>
+  <article class="stats-card">
+    <span>Curtidas no feed</span>
+    <strong>{{ total_likes }}</strong>
+  </article>
+  <article class="stats-card">
+    <span>Status</span>
+    <strong style="font-size: 1.4rem">Tudo publicado</strong>
+  </article>
+</section>
+
+<section class="panel" style="margin-top: 22px; padding: 22px">
+  <div
+    class="toolbar"
+    style="justify-content: space-between; margin-bottom: 18px"
+  >
+    <div>
+      <h2 style="margin: 0">Posts publicados</h2>
+      <p class="muted" style="margin: 8px 0 0">
+        Revise o que já entrou no feed e ajuste o que precisar.
+      </p>
+    </div>
+  </div>
+
+  {% if noticias %}
+  <div class="table-list">
+    {% for noticia in noticias %}
+    <article class="card post-row">
+      <div class="card-media" style="aspect-ratio: auto; min-height: 100%">
+        {% if noticia['imagem'] %}
+        <img
+          src="/{{ noticia['imagem'] }}"
+          alt="Imagem do post {{ noticia['titulo'] }}"
+        />
+        {% else %}
+        <div class="preview-empty" style="min-height: 100%">
+          Sem imagem cadastrada
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div
+          class="toolbar"
+          style="justify-content: space-between; align-items: flex-start"
+        >
+          <div class="toolbar">
+            <span class="chip">{{ noticia['categoria'] }}</span>
+            {% if noticia['destaque'] %}
+            <span class="chip" style="background: var(--accent-soft)"
+              >Destaque</span
+            >
+            {% endif %}
+          </div>
+          <span class="meta">{{ noticia['likes'] }} curtidas</span>
+        </div>
+        <div>
+          <h3
+            style="
+              margin: 0 0 8px;
+              font-size: 1.02rem;
+              line-height: 1.35;
+              color: var(--brand-dark);
+            "
+          >
+            {{ noticia['titulo'] }}
+          </h3>
+          <p style="margin: 0 0 10px; font-size: 0.93rem">
+            {{ noticia['resumo'] }}
+          </p>
+          <p class="meta" style="margin: 0">
+            No ar desde {{ noticia['data_criacao']|datetime_br }}
+          </p>
+        </div>
+        <div class="card-actions">
+          <a
+            class="btn-link btn-primary"
+            href="{{ url_for('editar_noticia', noticia_id=noticia['id']) }}"
+            >Editar</a
+          >
+          <form
+            method="post"
+            action="{{ url_for('excluir_noticia', noticia_id=noticia['id']) }}"
+            onsubmit="return confirm('Deseja excluir este post?');"
+          >
+            <button class="btn btn-danger" type="submit">Excluir</button>
+          </form>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3 class="section-title">Ainda não tem nada no feed</h3>
+    <p class="muted">
+      Crie o primeiro post para começar a movimentar a página.
+    </p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

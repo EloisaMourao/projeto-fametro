@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Feed de Notícias | Portal Tefé Notícias{% endblock %}
+{% block conteudo %}
+<section class="hero">
+    <span class="chip">No ar agora</span>
+    <h1 style="font-size: clamp(1.55rem, 2.6vw, 2.2rem);">As novidades, os avisos e os assuntos que estão rendendo por aqui.</h1>
+    <p style="max-width: 58ch; font-size: 0.98rem;">Role o feed, encontre o que interessa e deixe sua curtida nos posts que chamarem atenção.</p>
+</section>
+
+<section class="panel search-panel" style="margin-top: 22px;">
+    <form method="get" action="{{ url_for('noticias') }}" class="search-grid">
+        <div class="field" style="margin-bottom: 0;">
+            <label for="q">Busca</label>
+            <input class="input" id="q" name="q" type="text" value="{{ filtros.busca }}" placeholder="Procure um assunto, um título ou uma palavra">
+        </div>
+        <div class="field" style="margin-bottom: 0;">
+            <label for="categoria">Categoria</label>
+            <select class="select" id="categoria" name="categoria">
+                <option value="">Todas</option>
+                {% for categoria in categorias %}
+                <option value="{{ categoria }}" {% if filtros.categoria == categoria %}selected{% endif %}>{{ categoria }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin-bottom: 0;">
+            <label for="ordenar">Ordenação</label>
+            <select class="select" id="ordenar" name="ordenar">
+                <option value="recentes" {% if filtros.ordenar == 'recentes' %}selected{% endif %}>Mais recentes</option>
+                <option value="populares" {% if filtros.ordenar == 'populares' %}selected{% endif %}>Mais curtidas</option>
+                <option value="titulo" {% if filtros.ordenar == 'titulo' %}selected{% endif %}>Título A-Z</option>
+                <option value="antigos" {% if filtros.ordenar == 'antigos' %}selected{% endif %}>Mais antigos</option>
+            </select>
+        </div>
+        <label class="chip" style="align-self: end; justify-content: center; min-height: 50px;">
+            <input type="checkbox" name="imagem" value="1" {% if filtros.somente_com_imagem %}checked{% endif %}>
+            Só com imagem
+        </label>
+        <div class="toolbar" style="align-self: end; justify-content: flex-end;">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+            <a class="btn-link btn-secondary" href="{{ url_for('noticias') }}">Ver tudo</a>
+        </div>
+    </form>
+</section>
+
+{% if destaque %}
+<section class="card lead-post lead-highlight" style="margin-top: 22px;">
+    <div class="card-media" style="aspect-ratio: auto; min-height: 100%;">
+        {% if destaque['imagem'] %}
+        <img src="/{{ destaque['imagem'] }}" alt="Imagem principal de {{ destaque['titulo'] }}">
+        {% else %}
+        <div class="preview-empty" style="min-height: 100%;">Destaque sem imagem</div>
+        {% endif %}
+    </div>
+    <div class="lead-copy">
+        <div class="lead-kicker">
+            {% if destaque['destaque'] %}
+            <span class="chip">Em destaque</span>
+            {% else %}
+            <span class="chip">Primeiro post</span>
+            {% endif %}
+            <span class="chip">{{ destaque['categoria'] }}</span>
+        </div>
+        <h2 style="font-size: clamp(1.2rem, 2.1vw, 1.65rem); line-height: 1.24;">{{ destaque['titulo'] }}</h2>
+        <p class="lead-summary">{{ destaque['resumo'] }}</p>
+        <div class="lead-stats">
+            <span>{{ destaque['likes'] }} curtidas</span>
+            <span>{{ destaque['data_criacao']|datetime_br }}</span>
+        </div>
+        <div class="post-expand">
+            <button class="modal-trigger" type="button" data-modal-source="post-modal-{{ destaque['id'] }}">Abrir texto completo</button>
+        </div>
+        <div class="lead-actions">
+            <form class="like-form" method="post" action="{{ url_for('curtir_noticia', noticia_id=destaque['id'], q=filtros.busca, categoria=filtros.categoria, ordenar=filtros.ordenar, imagem='1' if filtros.somente_com_imagem else None) }}">
+                {% if destaque['id'] in liked_posts %}
+                    <button class="btn btn-secondary" type="submit" disabled>Curtido</button>
+                {% else %}
+                <button class="btn btn-primary" type="submit">Curtir post</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section style="margin-top: 26px;">
+    <div class="toolbar" style="justify-content: space-between; margin-bottom: 12px; align-items: end;">
+        <div>
+            <h2 style="margin: 0; font-size: 1.12rem; color: var(--brand-dark);">Mais no feed</h2>
+            <p class="muted" style="margin: 6px 0 0; font-size: 0.9rem;">Outros posts para continuar acompanhando sem perder o ritmo.</p>
+        </div>
+    </div>
+
+<section class="grid subfeed-grid">
+    {% for noticia in noticias %}
+    <article class="card subfeed-card">
+        <div class="card-media">
+            {% if noticia['imagem'] %}
+            <img src="/{{ noticia['imagem'] }}" alt="Imagem do post {{ noticia['titulo'] }}">
+            {% else %}
+            <div class="preview-empty" style="min-height: 100%;">Sem imagem</div>
+            {% endif %}
+        </div>
+        <div class="subfeed-body">
+            <div class="subfeed-topline">
+                <span class="chip">{{ noticia['categoria'] }}</span>
+                <span class="meta">{{ noticia['likes'] }} curtidas</span>
+            </div>
+            <div>
+                <h3 class="subfeed-title">{{ noticia['titulo'] }}</h3>
+                <p class="subfeed-summary">{{ noticia['resumo'] }}</p>
+                <div class="subfeed-meta">
+                    <span>{{ noticia['data_criacao']|datetime_br }}</span>
+                </div>
+            </div>
+            <div class="post-expand" style="padding-top: 10px;">
+                <button class="modal-trigger" type="button" data-modal-source="post-modal-{{ noticia['id'] }}">Continuar lendo</button>
+            </div>
+            <div class="subfeed-actions">
+                <span class="small muted">Post aberto</span>
+                <form class="like-form" method="post" action="{{ url_for('curtir_noticia', noticia_id=noticia['id'], q=filtros.busca, categoria=filtros.categoria, ordenar=filtros.ordenar, imagem='1' if filtros.somente_com_imagem else None) }}">
+                    {% if noticia['id'] in liked_posts %}
+                    <button class="btn btn-secondary" type="submit" disabled>Curtido</button>
+                    {% else %}
+                    <button class="btn btn-primary" type="submit">Curtir</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </article>
+    {% else %}
+    <div class="panel empty-state" style="grid-column: 1 / -1;">
+        <h3 class="section-title">Nada apareceu por aqui</h3>
+        <p class="muted">Tente outro termo de busca ou volte para ver todos os posts.</p>
+    </div>
+    {% endfor %}
+</section>
+</section>
+
+<div class="modal" id="postModal" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="postModalTitle">
+        <button class="modal-close" type="button" id="postModalClose" aria-label="Fechar leitura">×</button>
+        <div id="postModalContent"></div>
+    </div>
+</div>
+
+{% if destaque %}
+<template id="post-modal-{{ destaque['id'] }}" class="modal-shell">
+    <article>
+        <div class="modal-media">
+            {% if destaque['imagem'] %}
+            <img src="/{{ destaque['imagem'] }}" alt="Imagem do post {{ destaque['titulo'] }}">
+            {% else %}
+            <div class="preview-empty" style="min-height: 100%;">Sem imagem</div>
+            {% endif %}
+        </div>
+        <div class="modal-body">
+            <div class="lead-kicker">
+                {% if destaque['destaque'] %}
+                <span class="chip">Em destaque</span>
+                {% else %}
+                <span class="chip">Primeiro post</span>
+                {% endif %}
+                <span class="chip">{{ destaque['categoria'] }}</span>
+            </div>
+            <h3 id="postModalTitle">{{ destaque['titulo'] }}</h3>
+            <div class="modal-meta">
+                <span>{{ destaque['data_criacao']|datetime_br }}</span>
+                <span>{{ destaque['likes'] }} curtidas</span>
+            </div>
+            <p>{{ destaque['conteudo'] }}</p>
+        </div>
+    </article>
+</template>
+{% endif %}
+
+{% for noticia in noticias %}
+<template id="post-modal-{{ noticia['id'] }}" class="modal-shell">
+    <article>
+        <div class="modal-media">
+            {% if noticia['imagem'] %}
+            <img src="/{{ noticia['imagem'] }}" alt="Imagem do post {{ noticia['titulo'] }}">
+            {% else %}
+            <div class="preview-empty" style="min-height: 100%;">Sem imagem</div>
+            {% endif %}
+        </div>
+        <div class="modal-body">
+            <div class="lead-kicker">
+                <span class="chip">{{ noticia['categoria'] }}</span>
+            </div>
+            <h3 id="postModalTitle">{{ noticia['titulo'] }}</h3>
+            <div class="modal-meta">
+                <span>{{ noticia['data_criacao']|datetime_br }}</span>
+                <span>{{ noticia['likes'] }} curtidas</span>
+            </div>
+            <p>{{ noticia['conteudo'] }}</p>
+        </div>
+    </article>
+</template>
+{% endfor %}
+
+<p class="footer-note">Um feed simples para ler, descobrir e reagir ao que está rolando.</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const modal = document.getElementById('postModal');
+    const modalContent = document.getElementById('postModalContent');
+    const modalClose = document.getElementById('postModalClose');
+    const triggers = document.querySelectorAll('[data-modal-source]');
+
+    function openModal(templateId) {
+        const template = document.getElementById(templateId);
+        if (!template) return;
+
+        modalContent.innerHTML = template.innerHTML;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = '';
+    }
+
+    triggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => openModal(trigger.dataset.modalSource));
+    });
+
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}
